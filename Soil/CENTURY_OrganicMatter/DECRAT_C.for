@@ -66,11 +66,44 @@
 !       On the Temperature Dependence of Soil Respiration
 !       Functional Ecology, Vol. 8, No. 3, (Jun., 1994), pp. 315-323
 !       TFSOM = 0.32 * EXP(308.56 * (1/56.02 - 1/(TK-227.13)))
+!       NOTE Regarding added conditions: (DMR) 
+!         Taking a look at the source, I see an exponential function of 
+!         "respiration rate relative to fitted value at 10c" (figure 5, left)
+!         on the y axis, and  
+!         "temperature" (celsius) on the x axis.
+!         so, even though TFSOM = 0.32 * EXP(5.51 - 308.56 / (ST(1) (or ST(L)) + 46.0)) 
+!         very large evaluated below -46, it never jumps up again for me...
+!         so I will go ahead and limit it to 0.01 for all temperatures ST(1) below -11.63 celcius.
+!         Furthermore, there's no reason to calculate the EXP above temperatures above 37.91 celcius,
+!         because they will always be set to 2.
+!         The math:
+!           For TFSOM below 0.01:
+!           -46 <= ST(L) <= -11.6229
+!           For TFSOM above 2
+!           ST(L) < -46 (but this should be set to 0.01 based on the source)
+!           ST(L) >= 37.9067
+
         IF (L < 2) THEN
-          TFSOM = 0.32 * EXP(5.51 - 308.56 / (ST(1) + 46.0))
+          ! Check for the conditions based on the temperature ST(1)
+          IF (ST(1) <= -11.63) THEN
+              TFSOM = 0.01
+          ELSE IF (ST(1) >= 37.91) THEN
+              TFSOM = 2.0
+          ELSE
+              TFSOM = 0.32 * EXP(5.51 - 308.56 / (ST(1) + 46.0))
+          END IF
+
         ELSE
-          TFSOM = 0.32 * EXP(5.51 - 308.56 / (ST(L) + 46.0))
+          IF (ST(L) <= -11.63) THEN
+              TFSOM = 0.01
+          ELSE IF (ST(L) >= 37.91) THEN
+              TFSOM = 2.0
+          ELSE
+              TFSOM = 0.32 * EXP(5.51 - 308.56 / (ST(L) + 46.0))
+          END IF
         ENDIF
+
+
 
 !       Limit TFSOM between >= 0.01 and =< 2.
         TFSOM = AMAX1 (TFSOM, 0.01)

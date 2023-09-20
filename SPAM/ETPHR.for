@@ -440,7 +440,7 @@ C========================================================================
      &  CO2QE, AGEQE)                                     !Output
 
       USE MODULEDATA
-	 
+     
       IMPLICIT NONE
       SAVE
 
@@ -535,7 +535,7 @@ C     to 1.0 at 30 oC and 350 µL/L CO2.
 
       CINT = MAX(CO2HR,GAMST)
       IF (PGPATH .EQ. "C4" .OR. PGPATH .EQ. "c4") THEN
-         CO2QE = CQESF * (CINT-GAMST) / (4.*CINT+8.*GAMST)	
+         CO2QE = CQESF * (CINT-GAMST) / (4.*CINT+8.*GAMST)  
       ELSE
          CO2QE = 6.225 * (CINT-GAMST) / (4.*CINT+8.*GAMST)
       ENDIF
@@ -605,19 +605,38 @@ C     Initialization.
 C     Calculate leaf photosynthesis (µmol CO2/m2/s) using a non-rectangular
 C     hyperbola (Rabinowitch, 1951; Lommen et al, 1971; Evans and Farquhar,
 C     Norman and Arkebauer, Gutschick, In: Boote and Loomis, 1991)
-
       A = CVTURE
       B = (QEFF*PARLF) + LFMAX
       C = QEFF * PARLF * LFMAX
-!     CHP Added checks for floating underflow 1/16/03
-!      IF (LFMAX .GT. 0.0) THEN
-      IF (LFMAX .GT. 0.0 .AND. (QEFF*PARLF/LFMAX) .LT. 20.) THEN
-C       PGLF = (B - SQRT(B**2-4.*A*C)) / (2.*A)
-        PGLF = LFMAX * (1.0 - EXP(-QEFF*PARLF/LFMAX))
+!       CHP Added checks for floating underflow 1/16/03
+!        IF (LFMAX .GT. 0.0) THEN
+      IF (LFMAX .GT. 0.0) THEN
+        IF ((QEFF*PARLF/LFMAX) .LT. 20.) THEN
+C         PGLF = (B - SQRT(B**2-4.*A*C)) / (2.*A)
+          PGLF = LFMAX * (1.0 - EXP(-QEFF*PARLF/LFMAX))
+        ELSE
+          PGLF = MAX(LFMAX, 0.0)
+        ENDIF
       ELSE
         PGLF = MAX(LFMAX, 0.0)
       ENDIF
       PNLF = PGLF
+! C     Calculate leaf photosynthesis (µmol CO2/m2/s) using a non-rectangular
+! C     hyperbola (Rabinowitch, 1951; Lommen et al, 1971; Evans and Farquhar,
+! C     Norman and Arkebauer, Gutschick, In: Boote and Loomis, 1991)
+! 
+!       A = CVTURE
+!       B = (QEFF*PARLF) + LFMAX
+!       C = QEFF * PARLF * LFMAX
+! !     CHP Added checks for floating underflow 1/16/03
+! !      IF (LFMAX .GT. 0.0) THEN
+!       IF (LFMAX .GT. 0.0 .AND. (QEFF*PARLF/LFMAX) .LT. 20.) THEN
+! C       PGLF = (B - SQRT(B**2-4.*A*C)) / (2.*A)
+!         PGLF = LFMAX * (1.0 - EXP(-QEFF*PARLF/LFMAX))
+!       ELSE
+!         PGLF = MAX(LFMAX, 0.0)
+!       ENDIF
+!       PNLF = PGLF
 
 C     Calculate leaf CO2 conductance (mol/m2/s) using assumption of constant
 C     CI/CA ratio.  Compensation point (GAMST) is temperature dependent.

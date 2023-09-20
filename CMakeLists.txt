@@ -8,9 +8,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
 
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
    message(FATAL_ERROR "DSSAT in-source builds are not permitted. \nMake a separate folder"
-   						"for building:\nmkdir build; cd build; cmake ..\nBefore that,"
-   						"remove the files already created:\n"
-   						"CMakeCache.txt and CMakeFiles\n")
+                        "for building:\nmkdir build; cd build; cmake ..\nBefore that,"
+                        "remove the files already created:\n"
+                        "CMakeCache.txt and CMakeFiles\n")
 endif("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 
 PROJECT(DSSAT-CSM Fortran)
@@ -101,18 +101,18 @@ ELSE()
     SET(OSDefinitions "Utilities/OSDefsLINUX.for")
     configure_file(
         "${PROJECT_SOURCE_DIR}/Data/DSSATPRO.L47.in"
-		"${PROJECT_SOURCE_DIR}/Data/DSSATPRO.L47"
+        "${PROJECT_SOURCE_DIR}/Data/DSSATPRO.L47"
     )
-	configure_file(
-		"${PROJECT_SOURCE_DIR}/Utilities/run_dssat.in"
-		"${PROJECT_SOURCE_DIR}/Utilities/run_dssat"
-	)
+    configure_file(
+        "${PROJECT_SOURCE_DIR}/Utilities/run_dssat.in"
+        "${PROJECT_SOURCE_DIR}/Utilities/run_dssat"
+    )
 ENDIF(WIN32)
 
 # Add the source files
 set(
     source_list
-    	"${OSDefinitions}"
+        "${OSDefinitions}"
         "Utilities/CSMVersion.for"
         "Utilities/ModuleDefs.for"
         "Utilities/DATES.for"
@@ -594,6 +594,7 @@ set(
         "Weather/WGEN.for"
         "Weather/WTHMOD.for"
 )
+
 ADD_EXECUTABLE(${EXECUTABLE_NAME} ${source_list})
 
 foreach(source IN LISTS source_list)
@@ -604,14 +605,18 @@ endforeach()
 
 
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION
-	RUNTIME DESTINATION .)
+    RUNTIME DESTINATION .)
 
 install(FILES Utilities/run_dssat DESTINATION .
-	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-	)
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
 
 install(DIRECTORY Data/ DESTINATION .
-	PATTERN "*.in" EXCLUDE)
+    PATTERN "*.in" EXCLUDE)
+
+# Set the additional Fortran flag for zero-initialization, to prevent very wierd arithmatic
+# errors from garbage being set to initial memory on the ~thousandth run of DSSAT...
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -finit-local-zero")
 
 ##################################################
 # Resume information about flags and option used #

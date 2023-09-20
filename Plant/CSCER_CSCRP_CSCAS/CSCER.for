@@ -4983,7 +4983,7 @@
      &       LFWT*(1.0-LSHFR)*RSCLX*CUMDU/(Pd(1)+pd(2)+pd(3)+pd(4)))
             LSHRSWT = AMIN1(RSWT-LLRSWT,
      &       LFWT*LSHFR*RSCLX*CUMDU/(Pd(1)+pd(2)+pd(3)+pd(4)))
-            IF (STWT+CHWT.GT.0.0) THEN
+            IF (STWT+CHWT.GT.0.0 .AND. ABS(STWT) > 1.0e-10) THEN
               STRSWT = (RSWT-LLRSWT-LSHRSWT)*(STWT-CHWT)/STWT
               CHRSWT = (RSWT-LLRSWT-LSHRSWT)*CHWT/STWT
             ELSE
@@ -6021,7 +6021,11 @@
           IF (ISTAGE.EQ.5.AND.ISTAGEP.EQ.4) THEN
             WRITE(fnumwrk,*)'Start of linear kernel growth    '
             WRITE(fnumwrk,*)' Original kernel growth rate (G2) ',g2
-            G2 = (G2KWT-(GRWT/GRNUM)*1000.0) / (PD(5)*(6.0-XSTAGE))
+            IF (GRNUM.EQ.0.0) THEN
+              G2 = 0.0
+            ELSE
+              G2 = (G2KWT-(GRWT/GRNUM)*1000.0) / (PD(5)*(6.0-XSTAGE))
+            ENDIF
             WRITE(fnumwrk,*)' Adjusted kernel growth rate (G2) ',g2
             WRITE(fnumwrk,*)' (Adjustment because growing at lag rate',
      &      ' for overlap into linear filling period)'
@@ -6611,13 +6615,22 @@
      &       '  Grain weight mg   ',GRWT/GRNUM*1000.0
             WRITE (fnumwrk,'(A20,F6.1)')
      &       '  Grain weight coeff',g2kwt
-            IF (GRNUM.GT.0.0.AND.G2KWT-GRWT/GRNUM*1000.0.GT.0.1) THEN
-              WRITE (fnumwrk,'(A34)')
-     &         '  Some limitation on grain growth!'
-              WRITE(fnumwrk,'(A22,I4)')'   Days of Ch2o limit ',ch2olim
-              WRITE(fnumwrk,'(A22,I4)')'   Days of N limit    ',nlimit
-              WRITE(fnumwrk,'(A22,I4)')'   Days of temp limit ',tlimit
-            ENDIF
+            IF (GRNUM.GT.0.0) THEN
+              IF (G2KWT-GRWT/GRNUM*1000.0.GT.0.1) THEN
+                WRITE (fnumwrk,'(A34)')
+     &           '  Some limitation on grain growth!'
+                WRITE(fnumwrk,'(A22,I4)')'   Days of Ch2o limit ',ch2olim
+                WRITE(fnumwrk,'(A22,I4)')'   Days of N limit    ',nlimit
+                WRITE(fnumwrk,'(A22,I4)')'   Days of temp limit ',tlimit
+              END IF
+            END IF
+ !           IF (GRNUM.GT.0.0.AND.G2KWT-GRWT/GRNUM*1000.0.GT.0.1) THEN
+ !             WRITE (fnumwrk,'(A34)')
+ !    &         '  Some limitation on grain growth!'
+ !             WRITE(fnumwrk,'(A22,I4)')'   Days of Ch2o limit ',ch2olim
+ !             WRITE(fnumwrk,'(A22,I4)')'   Days of N limit    ',nlimit
+ !             WRITE(fnumwrk,'(A22,I4)')'   Days of temp limit ',tlimit
+ !           ENDIF
             IF (grwt.GT.0.0) WRITE (fnumwrk,'(A20,F6.1)')
      &       '  Grain N %         ',grainn/grwt*100.0
             WRITE (fnumwrk,'(A20,F6.1)')

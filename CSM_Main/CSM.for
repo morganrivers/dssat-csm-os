@@ -78,8 +78,13 @@ C=======================================================================
       USE ModuleData
       USE HeaderMod
 
+C     DMR code line below
+      use iso_fortran_env
+
+
       IMPLICIT NONE
 C-----------------------------------------------------------------------
+      
       CHARACTER*1   ANS,RNMODE,BLANK,UPCASE
       CHARACTER*6   ERRKEY,FINDCH,TRNARG
       CHARACTER*8   FNAME,DUMMY,MODELARG
@@ -105,6 +110,21 @@ C-----------------------------------------------------------------------
       PARAMETER (ERRKEY = 'CSM   ')      
       PARAMETER (BLANK  = ' ')
 
+C     DMR code below
+      INTEGER               count_rate
+      INTEGER               start
+      INTEGER               finish
+      REAL                  total_time(8)
+      REAL                  elapsed_time
+      INTEGER               segment
+      INTEGER               loop_count
+      REAL                  before_daily_loop_time
+      REAL                  daily_loop_time
+      INTEGER               before_daily_start
+      INTEGER               daily_loop_start
+C     END DMR code
+
+
 C     Define constructed variable types based on definitions in
 C     ModuleDefs.for.
 
@@ -115,7 +135,14 @@ C     The variable "ISWITCH" is of type "SwitchType".
       TYPE (SwitchType) ISWITCH
 
 !C-----------------------------------------------------------------------
+C     DMR CODE
+C     Get the system clock count rate
+      call system_clock(count_rate=count_rate)
+C     Initialize total_time array and loop counter
+      total_time = 0.0
+C     END DMR CODE
 
+      loop_count = 0
       DONE = .FALSE.
       YRDOY_END = 9999999
 
@@ -248,6 +275,13 @@ C***********************************************************************
 C     RUN INITIALIZATION
 C***********************************************************************
       RUN_LOOP: DO WHILE (.NOT. DONE)
+
+C     DMR CODE
+      segment = 1
+      loop_count = loop_count + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 1!
+
       YREND = -99
       RUN = RUN + 1
       CONTROL % RUN = RUN
@@ -270,6 +304,15 @@ C***********************************************************************
           GO TO 2000
         ENDIF
       ENDIF
+
+C     DMR END SEGMENT 1!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 2!
+
       IF (INDEX('Q',RNMODE) .GT. 0) THEN
         CALL IGNORE (LUNBIO,LINBIO,ISECT,CHARTEST)
         IF (ISECT .EQ. 0 .OR. RUN .EQ. 1) THEN
@@ -283,6 +326,15 @@ C***********************************************************************
         READ (CHARTEST(93:113),110,IOSTAT=ERRNUM) TRTNUM,TRTREP,ROTNUM
         IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY,26,FILEB,LINBIO)
       ENDIF
+
+
+C     DMR END SEGMENT 2!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 3!
 
       CONTROL % FILEIO  = FILEIO
       CONTROL % FILEX   = FILEX
@@ -298,6 +350,14 @@ C-KRT**************************************************************
       ENDIF
 C-KRT*************************************************************
 
+C     DMR END SEGMENT 3!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 4!
+
 C-----------------------------------------------------------------------
 C    Run INPUT module
 C-----------------------------------------------------------------------
@@ -311,6 +371,15 @@ C-----------------------------------------------------------------------
         CALL PATHD  (DSSATP,PATHX,LEN_TRIM(PATHX))
         CONTROL % DSSATP = DSSATP
       ENDIF
+
+C     DMR END SEGMENT 4!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 5!
+
 C-----------------------------------------------------------------------
 C    Check to see if the temporary file exists
 C-----------------------------------------------------------------------
@@ -366,6 +435,16 @@ C-----------------------------------------------------------------------
          YRDIF = YR - YR0
          CONTROL % YRDIF = YRDIF
       ENDIF
+
+
+C     DMR END SEGMENT 5!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 6!
+
        
       CONTROL % FILEX   = FILEX
       CONTROL % NYRS    = NYRS
@@ -394,9 +473,16 @@ C-----------------------------------------------------------------------
         CALL INFO(7,ERRKEY,MSG)
       ENDIF
 
+
       CALL LAND(CONTROL, ISWITCH, 
      &          YRPLT, MDATE, YREND)
 
+
+C     DMR END SEGMENT 6!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
 C*********************************************************************** 
 C*********************************************************************** 
 C-----------------------------------------------------------------------
@@ -406,6 +492,9 @@ C     SEASONAL INITIALIZATION
 C*********************************************************************** 
       SEAS_LOOP: DO WHILE (MULTI .NE. NYRS)
 C***********************************************************************
+      call system_clock(count=start)
+C     DMR START SEGMENT 7!
+
       IF (NYRS .GT. 1) THEN 
         MULTI = MULTI + 1
       ELSE
@@ -440,6 +529,9 @@ C***********************************************************************
      &          YRPLT, MDATE, YREND)
 
       YRDOY = INCYD(YRDOY,-1)
+      call system_clock(count=finish)
+      before_daily_loop_time = real(finish - before_daily_start) / real(count_rate) * 1000.0
+      call system_clock(count=daily_loop_start)
 C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     BEGINNING of DAILY SIMULATION loop
@@ -491,6 +583,8 @@ C***********************************************************************
 C-----------------------------------------------------------------------
 C     END of DAILY SIMULATION loop
 C----------------------------------------------------------------------
+      call system_clock(count=finish)
+      daily_loop_time = real(finish - daily_loop_start) / real(count_rate) * 1000.0
 C*********************************************************************** 
 C     End of Season 
 C*********************************************************************** 
@@ -502,6 +596,15 @@ C***********************************************************************
 
 C-----------------------------------------------------------------------
       ENDDO SEAS_LOOP  
+
+C     DMR END SEGMENT 7!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+      call system_clock(count=start)
+C     DMR START SEGMENT 8!
+
 C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     END of SEASONAL SIMULATION loop
@@ -538,8 +641,22 @@ C-----------------------------------------------------------------------
         IF (ANS .NE. 'Y') DONE = .TRUE.
       ENDIF
 
+C     DMR END SEGMENT 8!
+      call system_clock(count=finish)
+      elapsed_time = real(finish - start) / real(count_rate) * 1000.0
+      total_time(segment) = total_time(segment) + elapsed_time
+      segment = segment + 1
+
  2000 CONTINUE
       END DO RUN_LOOP 
+      
+C     DMR CODE!
+C     Calculate and print the mean times for each segment
+      DO i = 1, 8
+          print *, "Total time taken for segment", i, ":", total_time(i), "ms"
+      END DO
+C     END DMR CODE!
+
 
 !     Final end-of-run call to land unit module
       CONTROL % DYNAMIC = ENDRUN
