@@ -55,7 +55,7 @@ C=======================================================================
       CHARACTER*1 ISWWAT, ISWNIT, ISWPHO, ISWPOT
       CHARACTER*2 CROP
       CHARACTER*12 FILEC      
-	CHARACTER*92 FILECC
+      CHARACTER*92 FILECC
 
       CHARACTER*6     ERRKEY          
       PARAMETER       (ERRKEY='RI_GRO')   
@@ -105,7 +105,7 @@ C=======================================================================
       REAL, DIMENSION(NL) :: ST, SW, UNH4, UNO3
       REAL, DIMENSION(NL) :: FracRts, SPi_AVAIL, PUptake
       REAL, DIMENSION(NL) :: SKi_AVAIL, Kuptake
-	REAL  Kstres, FSLFK, SLFK
+      REAL  Kstres, FSLFK, SLFK
       REAL  FSLFP, PStres1
       REAL  PStres2, SeedFrac, VegFrac, SLFP      
       REAL  PConc_Shut, PConc_Root, PConc_Shel, PConc_Seed
@@ -122,7 +122,7 @@ C=======================================================================
 !     The variable "CONTROL" is of type "ControlType".
       TYPE (ControlType) CONTROL
  
-	TYPE (ResidueType) SENESCE 
+      TYPE (ResidueType) SENESCE 
 
 !     The variable "ISWITCH" is of type "SwitchType".
       TYPE (SwitchType) ISWITCH
@@ -164,9 +164,9 @@ C=======================================================================
 
       FILECC   = TRIM(PATHCR) // FILEC
       FSLFP    = 0.050  
-	! FRACTION OF LEAF SENESECED DUE TO 100% P STRESS /DAY
+    ! FRACTION OF LEAF SENESECED DUE TO 100% P STRESS /DAY
       FSLFK    = 0.050   
-	! FRACTION OF LEAF SENESECED DUE TO 100% K STRESS /DAY
+    ! FRACTION OF LEAF SENESECED DUE TO 100% K STRESS /DAY
 
       STMWT    = 0.001
       LEAFNO   = 0
@@ -330,7 +330,7 @@ C=======================================================================
      &    TCNP, TLFWT, TMNC, TPLA, TRLOS)                 !Output
 
 !     UPDATE WEIGHTS FOR P MODEL      
-	WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
+      WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
       STMWTO = STMWT * PLTPOP   !Stem weight, g/m2
       RTWTO = RTWT * PLTPOP     !Root weight, g/m2
       PODWT = PANWT * PLTPOP    !Panicle weight, g/m2
@@ -395,9 +395,11 @@ C=======================================================================
           MGPP    = G1*MSTMWT*AMIN1 (STRCOLD,STRHEAT)  !,HSNSTRES)
           PTF    = 1.0    
           TILNO  = AMIN1 (TILNO,SPACE)   
-          IF (MGPP .GT. 0.0 .AND. GPP/MGPP .LT. 2.0) THEN
-             GPP    = MGPP*2.0
-             TGPP   = GPP - MGPP
+          IF (MGPP .GT. 0.0) THEN
+              IF (GPP/MGPP .LT. 2.0) THEN
+                  GPP = MGPP*2.0
+                  TGPP = GPP - MGPP
+              ENDIF
           ENDIF
 
         CASE (5)
@@ -419,7 +421,7 @@ C
           MFILL   = 0.0
           TFILL   = 0.0
           VANC    = TANC
-	!PCNVEG = TANC * 100     ! FOR P_CERES
+    !PCNVEG = TANC * 100     ! FOR P_CERES
           VMNC    = TMNC
 !          STRESSN = AMAX1 (SI4(3),SI4(4))    !not used
           !
@@ -700,7 +702,7 @@ CCCCC-PW
              MGROLF = CARBO*0.65
              GRORT  = CARBO - MGROLF
              MPLAG  = MGROLF/0.0055*TSHOCK*
-     &		        AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &              AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
           ENDIF
           IF (CUMPH .LE. 5.0/G3 .OR. TSHOCK .LT. 1.0) THEN
              MPLA  = MPLA  + MPLAG
@@ -713,13 +715,13 @@ CCCCC-PW
              IF (MGROLF .GT. 0.60*CARBO) THEN
                 MGROLF = 0.60*CARBO
                 MPLAG  = MGROLF/0.0060*
-     &			       AMIN1 (TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &                 AMIN1 (TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
              END IF
              GRORT = 0.25*CARBO
              IF (MGROLF .LT. (0.30*CARBO*TSHOCK)) THEN
                 MGROLF = 0.35*TSHOCK*CARBO
                 MPLAG  = MGROLF/0.0060*
-     &			       AMIN1 (TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &                 AMIN1 (TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
              ENDIF
              MGROSTM = MGROLF*0.85   !0.15
              TCARBO  = CARBO - MGROLF - GRORT - MGROSTM
@@ -755,7 +757,7 @@ CCCCC-PW
              IF (MGROLF .GT. CARBO*0.60) THEN
                 MGROLF = CARBO*0.60
                 MPLAG  = MGROLF/0.0060*TSHOCK*
-     &		           AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &                 AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
              ENDIF
              MGROSTM = MGROLF * 0.15
              GRORT   = CARBO  - MGROLF - MGROSTM
@@ -780,7 +782,7 @@ CCCCC-PW
                 MGROLF  = MGROLF  - (0.5*GRF)
                 MGROSTM = MGROSTM - (0.5*GRF)
                 MPLAG   = MGROLF/0.0055*TSHOCK*
-     &			        AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &                  AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
              END IF
              IF (TCARBO .GT. 0.0) THEN
                 GRORT  = GRORT + TCARBO*(1.0-TSHOCK)
@@ -818,7 +820,7 @@ CCCCC-PW
           IF (MGROLF .GT. 0.35*CARBO .AND. SUMDTT .GT. 249.0) THEN
              MGROLF = 0.35*CARBO
              MPLAG  = MGROLF/0.0060*
-     &        		AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &              AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
           END IF
           TILCAR = CARBO - MGROLF - MGROSTM - GRORT
           IF (TILCAR .LE. 0.0) THEN
@@ -826,7 +828,7 @@ CCCCC-PW
              MGROLF  = (MGROLF*0.7)/G3
              MGROSTM = CARBO - GRORT - MGROLF - TILCAR
              MPLAG   = MGROLF/0.0060*
-     &		         AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
+     &               AMIN1(TURFAC,TEMF,AGEFAC,PSTRES2,KSTRES)
           END IF
           TCARBO = TILCAR
           GRF    = TILCAR     !US
@@ -1188,7 +1190,7 @@ C
       ENDIF
 
        
-	WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
+      WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
       STMWTO = STMWT * PLTPOP   !Stem weight, g/m2
       RTWTO = RTWT * PLTPOP     !Root weight, g/m2
       PODWT = PANWT * PLTPOP    !Panicle weight, g/m2
@@ -1204,7 +1206,7 @@ C
      &      FLOODN, STOVN, RANC, ROOTN, TANC,               !I/O
      &    RNLOSS, SENESCE, TRNLOS, UNH4, UNO3, PLIGRT, CumNUptake)     !Output
          ENDIF
-	   ! Switches for P and K
+       ! Switches for P and K
          CALL MZ_KUPTAK(
      &       ISWPOT, NLAYR, SKi_Avail, UNH4, UNO3,        !Input
      &       KUPTAKE, KSTRES)                             !Output
@@ -1257,7 +1259,7 @@ C
       ELSEIF (DYNAMIC .EQ. OUTPUT .OR. DYNAMIC .EQ. SEASEND) THEN
 C-----------------------------------------------------------------------
 !     UPDATED WEIGHTS  
-	WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
+      WTLF = LFWT * PLTPOP      !Leaf weight, g/m2
       STMWTO = STMWT * PLTPOP   !Stem weight, g/m2
       RTWTO = RTWT * PLTPOP     !Root weight, g/m2
       PODWT = PANWT * PLTPOP    !Panicle weight, g/m2
