@@ -61,7 +61,27 @@ C=======================================================================
       WINDRUN= WEATHER % WINDRUN
       XLAT   = WEATHER % XLAT
       XELEV  = WEATHER % XELEV
-      
+
+C     !!!(DMR ADDED THIS 1.17.25): Check and log RHUM
+      IF (WEATHER % RHUM > -90.0) THEN  ! Assuming -99.0 indicates uninitialized
+          PRINT *, "Using RHUM: ", WEATHER % RHUM
+          OPEN(UNIT=99, FILE='logfileRHUM.txt', STATUS='UNKNOWN', POSITION='APPEND', ACTION='WRITE')
+          WRITE(99, '(A, F6.2)') 'Using RHUM=', WEATHER % RHUM
+          CLOSE(UNIT=99)
+      ELSE
+          PRINT *, "RHUM is uninitialized or invalid."
+          OPEN(UNIT=99, FILE='logfileRHUM.txt', STATUS='UNKNOWN', POSITION='APPEND', ACTION='WRITE')
+          WRITE(99, '(A)') 'RHUM is uninitialized or invalid.'
+          CLOSE(UNIT=99)
+      ENDIF
+      IF (WEATHER % RHUM > -90.0) THEN  ! Assuming -99.0 indicates uninitialized
+          PRINT *, "Using RHUM: ", WEATHER % RHUM
+      ELSE
+          PRINT *, "RHUM is uninitialized or invalid."
+      ENDIF
+
+C     !!!(END DMR ADDITION)
+
       YRDOY = CONTROL % YRDOY
       CALL YR_DOY(YRDOY, YEAR, DOY)
 
@@ -522,6 +542,11 @@ C     EO=ET0
 !###  EO = MAX(EO,0.0)   !gives error in DECRAT_C
       EO = MAX(EO,0.0001)
 
+C     !!!(DMR ADDED THIS 1.17.25): Log the message to a file
+      OPEN(UNIT=99, FILE='logfileRHUM.txt', STATUS='UNKNOWN', POSITION='APPEND', ACTION='WRITE')
+      WRITE(99, '(A, F6.2, A, F6.2)') 'Using penman monteith. WIND and VAPR: WINDSP=', WINDSP, ', VAPR=', VAPR
+      PRINT *, "Using penman monteith. WIND and VAPR: WINDSP=", WINDSP, ", VAPR=", VAPR
+C     !!!(END DMR ADDITION)
 !-----------------------------------------------------------------------
       RETURN
       END SUBROUTINE PETPEN

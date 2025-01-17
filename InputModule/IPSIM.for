@@ -118,7 +118,10 @@ C=======================================================================
          MEWTH   = 'M'
          MESIC   = 'M'
          MELI    = 'E'
-         MEEVP   = 'R'
+C         MEEVP   = 'R'
+C     !!!(DMR) BEING REALLY SURE I FORCE MEEVP TO F! This requires rhum and windspeed
+         MEEVP   = 'F'
+C     !!!(DMR) END CHANGES
          MEINF   = 'S'
          MEPHO   = 'L'
          MEHYD   = 'R'
@@ -779,6 +782,10 @@ C-----------------------------------------------------------------------
           CALL ERROR('IPSIM', 7, "", 0)
         END SELECT
       ENDIF
+C     !!!(DMR) BEING REALLY SURE I FORCE MEEVP TO F!  This requires rhum and windspeed
+      MEEVP = 'F'
+      ISWITCH % MEEVP = 'F'
+C     !!!(DMR) END CHANGES
 
       RETURN
 
@@ -886,6 +893,11 @@ C-----------------------------------------------------------------------
 !     chp moved 12/9/2009
       ISWITCH % ISWSYM = ISWSYM    !symbiosis (N-fixation)
       ISWITCH % MEPHO  = MEPHO     !photsynthesis method
+      
+C     !!!(DMR) BEING REALLY SURE I FORCE MEEVP TO F!  This requires rhum and windspeed
+      MEEVP = 'F'
+      ISWITCH % MEEVP = 'F'
+C     !!!(DMR) END CHANGES
 
       CALL PUT(ISWITCH)
       CALL PUT(CONTROL)
@@ -1270,7 +1282,12 @@ D     IPX = 23
             MEWTH = UPCASE(MEWTH)
             MESIC = UPCASE(MESIC)
             MELI  = UPCASE(MELI)
-            MEEVP = UPCASE(MEEVP)
+C            MEEVP = UPCASE(MEEVP)
+
+C           !!!(DMR) FORCE MEEVP TO F!!  This requires rhum and windspeed
+            MEEVP = 'F'
+C           !!!(DMR) END CHANGE!!
+
             MEINF = UPCASE(MEINF)
             MEPHO = UPCASE(MEPHO)
             MESOM = UPCASE(MESOM)
